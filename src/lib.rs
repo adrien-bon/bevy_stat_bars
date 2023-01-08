@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use std::marker::PhantomData;
 
 /// Insert as a resource to set z depth of Statbars
+#[derive(Resource)]
 pub struct StatbarDepth(pub f32);
 
 /// Implement `StatbarObservable` for a component you want to visualise with a stat bar.
@@ -330,8 +331,10 @@ fn update_statbar_values_from_other<T>(
     });
 }
 
-fn update_statbar_from_resource<T>(resource: Res<T>, mut statbar_query: Query<&mut Statbar<T>>)
-where
+fn update_statbar_from_resource<T: Resource>(
+    resource: Res<T>,
+    mut statbar_query: Query<&mut Statbar<T>>,
+) where
     T: StatbarObservable + 'static + Send + Sync,
 {
     if resource.is_changed() {
@@ -350,7 +353,7 @@ pub enum StatbarSystem {
 
 pub trait RegisterStatbarSubject {
     fn add_statbar_component_observer<T: StatbarObservable + Component>(&mut self) -> &mut Self;
-    fn add_statbar_resource_observer<T: StatbarObservable + 'static + Send + Sync>(
+    fn add_statbar_resource_observer<T: Resource + StatbarObservable + 'static + Send + Sync>(
         &mut self,
     ) -> &mut Self;
     fn add_standalone_statbar<T: 'static>(&mut self) -> &mut Self;
@@ -396,7 +399,7 @@ impl RegisterStatbarSubject for App {
             )
     }
 
-    fn add_statbar_resource_observer<T: StatbarObservable + 'static + Send + Sync>(
+    fn add_statbar_resource_observer<T: Resource + StatbarObservable + 'static + Send + Sync>(
         &mut self,
     ) -> &mut Self {
         if let Ok(render_app) = self.get_sub_app_mut(bevy::render::RenderApp) {
