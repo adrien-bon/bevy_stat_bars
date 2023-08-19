@@ -74,7 +74,7 @@ fn spawn_camera(mut commands: Commands) {
     let mut c = Camera2dBundle::default();
     c.transform.scale.x = 2.5;
     c.transform.scale.y = 2.5;
-    commands.spawn_bundle(c);
+    commands.spawn(c);
 }
 
 fn spawn_wizards(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -86,7 +86,7 @@ fn spawn_wizards(mut commands: Commands, asset_server: Res<AssetServer>) {
     for _ in 0..GRID_SIZE {
         for _ in 0..GRID_SIZE {
             commands
-                .spawn_bundle(SpriteBundle {
+                .spawn(SpriteBundle {
                     sprite: Sprite {
                         custom_size: Some(s * Vec2::ONE),
                         ..Default::default()
@@ -95,7 +95,7 @@ fn spawn_wizards(mut commands: Commands, asset_server: Res<AssetServer>) {
                     transform,
                     ..Default::default()
                 })
-                .insert_bundle((
+                .insert((
                     WizardCharacter,
                     Health::new_full(20.0),
                     Magic::new_full(17.0),
@@ -131,32 +131,33 @@ fn adjust_stats(
     mut mp_query: Query<&mut Magic>,
 ) {
     hp_query.for_each_mut(|mut hp| {
-        hp.value = hp.max * time.time_since_startup().as_secs_f32().sin().abs();
+        hp.value = hp.max * time.elapsed().as_secs_f32().sin().abs();
     });
     mp_query.for_each_mut(|mut mp| {
-        mp.value = mp.max * time.time_since_startup().as_secs_f32().cos().abs();
+        mp.value = mp.max * time.elapsed().as_secs_f32().cos().abs();
     });
 }
 
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
-        .insert_resource(bevy::render::texture::ImageSettings::default_nearest())
-        .insert_resource(WindowDescriptor {
-            present_mode: PresentMode::Immediate,
-            mode: WindowMode::Fullscreen,
-            ..Default::default()
-        })
+        // .insert_resource(bevy::render::texture::ImageSettings::default_nearest())
+        // .insert_resource(WindowDescriptor {
+        //     present_mode: PresentMode::Immediate,
+        //     mode: WindowMode::Fullscreen,
+        //     ..Default::default()
+        // })
         .add_plugins(DefaultPlugins)
-        .add_plugin(bevy::diagnostic::LogDiagnosticsPlugin::default())
-        .add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default())
+        .add_plugins((
+            bevy::diagnostic::LogDiagnosticsPlugin::default(),
+            bevy::diagnostic::FrameTimeDiagnosticsPlugin::default(),
+        ))
         .register_type::<Health>()
         .register_type::<Magic>()
         .register_type::<WizardCharacter>()
         .add_statbar_component_observer::<Health>()
         .add_statbar_component_observer::<Magic>()
-        .add_startup_system(spawn_camera)
-        .add_startup_system(spawn_wizards)
-        .add_system(adjust_stats)
+        .add_systems(Startup, (spawn_camera, spawn_wizards))
+        .add_systems(Update, adjust_stats)
         .run();
 }

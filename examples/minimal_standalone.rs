@@ -9,9 +9,9 @@ fn main() {
         .add_standalone_statbar::<()>()
         .add_startup_system(|mut commands: Commands| {
             commands
-                .spawn_bundle(Camera2dBundle::default())
+                .spawn(Camera2dBundle::default())
                 .commands()
-                .spawn_bundle(SpatialBundle::default())
+                .spawn(SpatialBundle::default())
                 .insert(Statbar::<()>::default());
         })
         .run();

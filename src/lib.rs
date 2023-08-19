@@ -1,6 +1,6 @@
 mod extraction;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, reflect::TypePath};
 use std::marker::PhantomData;
 
 /// Insert as a resource to set z depth of Statbars
@@ -59,7 +59,7 @@ where
 #[reflect(Component)]
 pub struct Statbar<T = ()>
 where
-    T: 'static,
+    T: TypePath + 'static,
 {
     /// color of the full part of the bar
     pub color: Color,
@@ -94,7 +94,7 @@ where
     pub _phantom: PhantomData<fn() -> T>,
 }
 
-impl<T> Default for Statbar<T> {
+impl<T: TypePath> Default for Statbar<T> {
     fn default() -> Self {
         Self {
             color: Color::YELLOW,
@@ -253,7 +253,7 @@ where
     }
 }
 
-fn switch_stat_bar_colors<T>(
+fn switch_stat_bar_colors<T: TypePath>(
     mut color_switch_query: Query<
         (&mut Statbar<T>, &mut StatbarColorSwitch<T>),
         Changed<Statbar<T>>,
@@ -270,7 +270,7 @@ fn switch_stat_bar_colors<T>(
     });
 }
 
-fn lerp_stat_bar_colors<T>(
+fn lerp_stat_bar_colors<T: TypePath>(
     mut color_lerp_query: Query<(&mut Statbar<T>, &mut StatbarColorLerp<T>), Changed<Statbar<T>>>,
 ) where
     T: 'static,
@@ -282,7 +282,7 @@ fn lerp_stat_bar_colors<T>(
     });
 }
 
-fn update_statbar_values<T>(
+fn update_statbar_values<T: TypePath>(
     mut statbar_query: Query<
         (&mut Statbar<T>, &T),
         (
@@ -299,7 +299,7 @@ fn update_statbar_values<T>(
     });
 }
 
-fn update_statbar_values_from_parents<T>(
+fn update_statbar_values_from_parents<T: TypePath>(
     mut statbar_query: Query<
         (&mut Statbar<T>, &Parent),
         (With<StatbarObserveParent>, Without<StatbarObserveEntity>),
@@ -315,7 +315,7 @@ fn update_statbar_values_from_parents<T>(
     });
 }
 
-fn update_statbar_values_from_other<T>(
+fn update_statbar_values_from_other<T: TypePath>(
     mut statbar_query: Query<
         (&mut Statbar<T>, &StatbarObserveEntity),
         Without<StatbarObserveParent>,
@@ -331,7 +331,7 @@ fn update_statbar_values_from_other<T>(
     });
 }
 
-fn update_statbar_from_resource<T: Resource>(
+fn update_statbar_from_resource<T: TypePath + Resource>(
     resource: Res<T>,
     mut statbar_query: Query<&mut Statbar<T>>,
 ) where
@@ -344,7 +344,7 @@ fn update_statbar_from_resource<T: Resource>(
     }
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemLabel)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum StatbarSystem {
     UpdateValues,
     UpdateColors,
@@ -352,59 +352,24 @@ pub enum StatbarSystem {
 }
 
 pub trait RegisterStatbarSubject {
-    fn add_statbar_component_observer<T: StatbarObservable + Component>(&mut self) -> &mut Self;
-    fn add_statbar_resource_observer<T: Resource + StatbarObservable + 'static + Send + Sync>(
+    fn add_statbar_component_observer<T: StatbarObservable + Component + TypePath>(
         &mut self,
     ) -> &mut Self;
-    fn add_standalone_statbar<T: 'static>(&mut self) -> &mut Self;
+    fn add_statbar_resource_observer<
+        T: TypePath + Resource + StatbarObservable + 'static + Send + Sync,
+    >(
+        &mut self,
+    ) -> &mut Self;
+    fn add_standalone_statbar<T: TypePath + 'static>(&mut self) -> &mut Self;
 }
 
 impl RegisterStatbarSubject for App {
-    fn add_statbar_component_observer<T: StatbarObservable + Component>(&mut self) -> &mut Self {
-        if let Ok(render_app) = self.get_sub_app_mut(bevy::render::RenderApp) {
-            render_app.add_system_to_stage(
-                bevy::render::RenderStage::Extract,
-                extraction::extract_stat_bars::<T>
-                    .after(bevy::sprite::SpriteSystem::ExtractSprites),
-            );
-        }
-
-        self.register_type::<Statbar<T>>()
-            .register_type::<StatbarBorder<T>>()
-            .register_type::<StatbarColorLerp<T>>()
-            .register_type::<StatbarColorSwitch<T>>()
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                update_statbar_values::<T>.label(StatbarSystem::UpdateValues),
-            )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                update_statbar_values_from_other::<T>.label(StatbarSystem::UpdateValues),
-            )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                update_statbar_values_from_parents::<T>.label(StatbarSystem::UpdateValues),
-            )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                switch_stat_bar_colors::<T>
-                    .after(StatbarSystem::UpdateValues)
-                    .label(StatbarSystem::UpdateColors),
-            )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                lerp_stat_bar_colors::<T>
-                    .after(StatbarSystem::UpdateValues)
-                    .label(StatbarSystem::UpdateColors),
-            )
-    }
-
-    fn add_statbar_resource_observer<T: Resource + StatbarObservable + 'static + Send + Sync>(
+    fn add_statbar_component_observer<T: StatbarObservable + Component + TypePath>(
         &mut self,
     ) -> &mut Self {
         if let Ok(render_app) = self.get_sub_app_mut(bevy::render::RenderApp) {
-            render_app.add_system_to_stage(
-                bevy::render::RenderStage::Extract,
+            render_app.add_systems(
+                ExtractSchedule,
                 extraction::extract_stat_bars::<T>
                     .after(bevy::sprite::SpriteSystem::ExtractSprites),
             );
@@ -414,28 +379,33 @@ impl RegisterStatbarSubject for App {
             .register_type::<StatbarBorder<T>>()
             .register_type::<StatbarColorLerp<T>>()
             .register_type::<StatbarColorSwitch<T>>()
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                update_statbar_from_resource::<T>.label(StatbarSystem::UpdateValues),
+            .configure_sets(
+                PostUpdate,
+                (StatbarSystem::UpdateValues, StatbarSystem::UpdateColors).chain(),
             )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                switch_stat_bar_colors::<T>
-                    .after(StatbarSystem::UpdateValues)
-                    .label(StatbarSystem::UpdateColors),
-            )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                lerp_stat_bar_colors::<T>
-                    .after(StatbarSystem::UpdateValues)
-                    .label(StatbarSystem::UpdateColors),
+            .add_systems(
+                PostUpdate,
+                (
+                    (
+                        update_statbar_values::<T>,
+                        update_statbar_values_from_other::<T>,
+                        update_statbar_values_from_parents::<T>,
+                    )
+                        .in_set(StatbarSystem::UpdateValues),
+                    (switch_stat_bar_colors::<T>, lerp_stat_bar_colors::<T>)
+                        .in_set(StatbarSystem::UpdateColors),
+                ),
             )
     }
 
-    fn add_standalone_statbar<T: 'static>(&mut self) -> &mut Self {
+    fn add_statbar_resource_observer<
+        T: TypePath + Resource + StatbarObservable + 'static + Send + Sync,
+    >(
+        &mut self,
+    ) -> &mut Self {
         if let Ok(render_app) = self.get_sub_app_mut(bevy::render::RenderApp) {
-            render_app.add_system_to_stage(
-                bevy::render::RenderStage::Extract,
+            render_app.add_systems(
+                ExtractSchedule,
                 extraction::extract_stat_bars::<T>
                     .after(bevy::sprite::SpriteSystem::ExtractSprites),
             );
@@ -445,13 +415,37 @@ impl RegisterStatbarSubject for App {
             .register_type::<StatbarBorder<T>>()
             .register_type::<StatbarColorLerp<T>>()
             .register_type::<StatbarColorSwitch<T>>()
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                switch_stat_bar_colors::<T>.label(StatbarSystem::UpdateColors),
+            .configure_sets(
+                PostUpdate,
+                (StatbarSystem::UpdateValues, StatbarSystem::UpdateColors).chain(),
             )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                lerp_stat_bar_colors::<T>.label(StatbarSystem::UpdateColors),
+            .add_systems(
+                PostUpdate,
+                (
+                    (update_statbar_from_resource::<T>,).in_set(StatbarSystem::UpdateValues),
+                    (switch_stat_bar_colors::<T>, lerp_stat_bar_colors::<T>)
+                        .in_set(StatbarSystem::UpdateColors),
+                ),
+            )
+    }
+
+    fn add_standalone_statbar<T: TypePath + 'static>(&mut self) -> &mut Self {
+        if let Ok(render_app) = self.get_sub_app_mut(bevy::render::RenderApp) {
+            render_app.add_systems(
+                ExtractSchedule,
+                extraction::extract_stat_bars::<T>
+                    .after(bevy::sprite::SpriteSystem::ExtractSprites),
+            );
+        }
+
+        self.register_type::<Statbar<T>>()
+            .register_type::<StatbarBorder<T>>()
+            .register_type::<StatbarColorLerp<T>>()
+            .register_type::<StatbarColorSwitch<T>>()
+            .add_systems(
+                PostUpdate,
+                ((switch_stat_bar_colors::<T>, lerp_stat_bar_colors::<T>)
+                    .in_set(StatbarSystem::UpdateColors),),
             )
     }
 }

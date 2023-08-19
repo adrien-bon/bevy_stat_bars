@@ -16,12 +16,12 @@ impl StatbarObservable for ObservedValue {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 }
 
 fn spawn_statbar(mut commands: Commands) {
     commands
-        .spawn_bundle((
+        .spawn((
             Statbar::<ObservedValue> {
                 color: Color::RED,
                 empty_color: Color::NAVY,
@@ -32,7 +32,7 @@ fn spawn_statbar(mut commands: Commands) {
             StatbarBorder::<ObservedValue>::all(Color::WHITE, 4.0),
             ObservedValue(0.35),
         ))
-        .insert_bundle(SpatialBundle::default());
+        .insert(SpatialBundle::default());
 }
 
 fn adjust_value(

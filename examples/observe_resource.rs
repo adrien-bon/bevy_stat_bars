@@ -4,6 +4,7 @@ use bevy_stat_bars::*;
 // Spawns a red and navy statbar with a white border in the middle of the window.
 // The left and right cursor keys decrease and increase the value of the bar.
 
+#[derive(Resource, Reflect)]
 struct ObservedResource(f32);
 
 impl StatbarObservable for ObservedResource {
@@ -13,12 +14,12 @@ impl StatbarObservable for ObservedResource {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 }
 
 fn spawn_statbar(mut commands: Commands) {
     commands
-        .spawn_bundle((
+        .spawn((
             Statbar::<ObservedResource> {
                 color: Color::RED,
                 empty_color: Color::NAVY,
@@ -29,7 +30,7 @@ fn spawn_statbar(mut commands: Commands) {
             },
             StatbarBorder::<ObservedResource>::all(Color::WHITE, 10.0),
         ))
-        .insert_bundle(SpatialBundle::default());
+        .insert(SpatialBundle::default());
 }
 
 fn adjust_value(

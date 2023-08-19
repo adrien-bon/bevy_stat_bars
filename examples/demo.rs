@@ -1,5 +1,5 @@
-use bevy::prelude::*;
-use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy::{prelude::*, window::WindowResolution};
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_stat_bars::*;
 use std::marker::PhantomData;
 
@@ -85,12 +85,12 @@ type Health = Stat<HealthValue>;
 type Magic = Stat<MagicValue>;
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 }
 
 fn spawn_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
     let wizard_id = commands
-        .spawn_bundle(SpriteBundle {
+        .spawn(SpriteBundle {
             sprite: Sprite {
                 custom_size: Some(128. * Vec2::ONE),
                 ..Default::default()
@@ -98,7 +98,7 @@ fn spawn_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
             texture: asset_server.load("wizard.png"),
             ..Default::default()
         })
-        .insert_bundle((
+        .insert((
             WizardCharacter,
             Health::new_full(20.0),
             Magic::new_full(17.0),
@@ -124,7 +124,7 @@ fn spawn_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
         .id();
 
     commands
-        .spawn_bundle((
+        .spawn((
             Statbar::<Health> {
                 color: Color::WHITE,
                 empty_color: Color::BLACK,
@@ -134,7 +134,7 @@ fn spawn_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             StatbarObserveEntity(wizard_id),
         ))
-        .insert_bundle(SpatialBundle {
+        .insert(SpatialBundle {
             transform: Transform::from_translation(-200. * Vec3::Y),
             ..Default::default()
         });
@@ -200,17 +200,18 @@ fn spawn_instructions(mut commands: Commands, asset_server: Res<AssetServer>) {
         color: Color::ANTIQUE_WHITE,
     };
 
-    commands.spawn_bundle(
+    commands.spawn(
         NodeBundle {
         style: Style {
-            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
             justify_content: JustifyContent::Center,
             ..Default::default()
         },
-        color: UiColor(Color::NONE),
+        background_color: BackgroundColor(Color::NONE),
         ..Default::default()
     }).with_children(|builder| {
-        builder.spawn_bundle(
+        builder.spawn(
             TextBundle {
                 text: Text {
                     sections: vec![
@@ -224,7 +225,8 @@ fn spawn_instructions(mut commands: Commands, asset_server: Res<AssetServer>) {
                             style: text_style
                         }
                     ],
-                    alignment: TextAlignment { vertical: VerticalAlign::Bottom, horizontal: HorizontalAlign::Center },
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: bevy::text::BreakLineOn::WordBoundary,
                 },
                 style: Style {
                     align_self: AlignSelf::FlexEnd,
@@ -238,24 +240,25 @@ fn spawn_instructions(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
-        .insert_resource(bevy::render::texture::ImageSettings::default_nearest())
-        .insert_resource(WindowDescriptor {
-            width: 1000.,
-            height: 1000.,
-            resizable: true,
-            ..Default::default()
-        })
-        .add_plugins(DefaultPlugins)
-        .add_plugin(WorldInspectorPlugin::new())
+        .add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        resolution: WindowResolution::new(1000., 1000.),
+                        resizable: true,
+                        ..Default::default()
+                    }),
+                    ..default()
+                }),
+        )
+        .add_plugins(WorldInspectorPlugin::new())
         .register_type::<Health>()
         .register_type::<Magic>()
         .register_type::<WizardCharacter>()
         .add_statbar_component_observer::<Health>()
         .add_statbar_component_observer::<Magic>()
-        .add_startup_system(spawn_camera)
-        .add_startup_system(spawn_demo)
-        .add_startup_system(spawn_instructions)
-        .add_system(move_character)
-        .add_system(adjust_stats)
+        .add_systems(Startup, (spawn_camera, spawn_demo, spawn_instructions))
+        .add_systems(Update, (move_character, adjust_stats))
         .run();
 }

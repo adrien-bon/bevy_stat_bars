@@ -11,7 +11,7 @@ use copyless::VecHelper;
 /// The z depth the stat bar sprites are drawn with.
 const DEFAULT_Z_DEPTH: f32 = 990.0;
 
-pub(crate) fn extract_stat_bars<V>(
+pub(crate) fn extract_stat_bars<V: TypePath>(
     extraction: Extract<(
         Option<Res<StatbarDepth>>,
         Query<(
@@ -24,7 +24,7 @@ pub(crate) fn extract_stat_bars<V>(
     )>,
     mut extracted_sprites: ResMut<ExtractedSprites>,
 ) {
-    let mut transform = GlobalTransform::default();
+    let mut new_translation = Vec3::default();
     let (depth, query) = &*extraction;
     for (id, bar, border, global_transform, computed_visibility) in query.iter() {
         if bar.hide || !computed_visibility.is_visible() {
@@ -39,14 +39,14 @@ pub(crate) fn extract_stat_bars<V>(
         let value = bar.value;
         let length = bar.length;
         let thickness = bar.thickness;
-        *transform.translation_mut() = global_transform.translation_vec3a();
+        new_translation = global_transform.translation();
         let z = depth
             .as_ref()
             .map(|depth| depth.0)
             .unwrap_or(DEFAULT_Z_DEPTH);
-        transform.translation_mut().z = z;
-        transform.translation_mut().x += bar.displacement.x;
-        transform.translation_mut().y += bar.displacement.y;
+        new_translation.z = z;
+        new_translation.x += bar.displacement.x;
+        new_translation.y += bar.displacement.y;
         let size = length * major_axis + thickness * minor_axis;
         if let Some(border) = border {
             let border_size = vec2(
@@ -55,7 +55,7 @@ pub(crate) fn extract_stat_bars<V>(
             );
             extracted_sprites.sprites.alloc().init(ExtractedSprite {
                 entity: id,
-                transform,
+                transform: GlobalTransform::from_translation(new_translation),
                 color: border.color,
                 rect: None,
                 custom_size: Some(border_size),
@@ -68,10 +68,10 @@ pub(crate) fn extract_stat_bars<V>(
 
         // draw bar back
         if value < 1.0 {
-            transform.translation_mut().z = z + 1.0;
+            new_translation.z = z + 1.0;
             extracted_sprites.sprites.alloc().init(ExtractedSprite {
                 entity: id,
-                transform,
+                transform: GlobalTransform::from_translation(new_translation),
                 color: bar.empty_color,
                 rect: None,
                 custom_size: Some(size),
@@ -87,12 +87,12 @@ pub(crate) fn extract_stat_bars<V>(
             let value = value.clamp(0., 1.);
             let bar_size = value * length * major_axis + thickness * minor_axis;
             let direction = if bar.reverse { -1. } else { 1. };
-            *transform.translation_mut() +=
-                Vec3A::from(direction * 0.5 * length * (value - 1.) * major_axis.extend(0.));
-            transform.translation_mut().z = z + 2.0;
+            new_translation +=
+                Vec3::from(direction * 0.5 * length * (value - 1.) * major_axis.extend(0.));
+            new_translation.z = z + 2.0;
             extracted_sprites.sprites.alloc().init(ExtractedSprite {
                 entity: id,
-                transform,
+                transform: GlobalTransform::from_translation(new_translation),
                 color: bar.color,
                 rect: None,
                 custom_size: Some(bar_size),
