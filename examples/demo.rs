@@ -142,22 +142,22 @@ fn spawn_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 fn move_character(
     time: Res<Time>,
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player_query: Query<&mut Transform, With<WizardCharacter>>,
 ) {
     let speed = 60.;
-    player_query.for_each_mut(|mut player_transform| {
+    player_query.iter_mut().for_each(|mut player_transform| {
         let translation = &mut player_transform.translation;
-        if keyboard_input.pressed(KeyCode::Left) {
+        if keyboard_input.pressed(KeyCode::ArrowLeft) {
             translation.x -= time.delta_seconds() * speed;
         }
-        if keyboard_input.pressed(KeyCode::Right) {
+        if keyboard_input.pressed(KeyCode::ArrowRight) {
             translation.x += time.delta_seconds() * speed;
         }
-        if keyboard_input.pressed(KeyCode::Down) {
+        if keyboard_input.pressed(KeyCode::ArrowDown) {
             translation.y -= time.delta_seconds() * speed;
         }
-        if keyboard_input.pressed(KeyCode::Up) {
+        if keyboard_input.pressed(KeyCode::ArrowUp) {
             translation.y += time.delta_seconds() * speed;
         }
     });
@@ -165,24 +165,24 @@ fn move_character(
 
 fn adjust_stats(
     time: Res<Time>,
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     mut hp_query: Query<&mut Health>,
     mut mp_query: Query<&mut Magic>,
 ) {
     let delta = 5.0 * time.delta_seconds();
-    hp_query.for_each_mut(|mut hp| {
-        if keyboard_input.pressed(KeyCode::A) {
+    hp_query.iter_mut().for_each(|mut hp| {
+        if keyboard_input.pressed(KeyCode::KeyA) {
             *hp -= delta;
         }
-        if keyboard_input.pressed(KeyCode::S) {
+        if keyboard_input.pressed(KeyCode::KeyS) {
             *hp += delta;
         }
     });
-    mp_query.for_each_mut(|mut mp| {
-        if keyboard_input.pressed(KeyCode::Q) {
+    mp_query.iter_mut().for_each(|mut mp| {
+        if keyboard_input.pressed(KeyCode::KeyQ) {
             *mp -= delta;
         }
-        if keyboard_input.pressed(KeyCode::W) {
+        if keyboard_input.pressed(KeyCode::KeyW) {
             *mp += delta;
         }
     });
@@ -225,7 +225,7 @@ fn spawn_instructions(mut commands: Commands, asset_server: Res<AssetServer>) {
                             style: text_style
                         }
                     ],
-                    alignment: TextAlignment::Center,
+                    justify: JustifyText::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::WordBoundary,
                 },
                 style: Style {

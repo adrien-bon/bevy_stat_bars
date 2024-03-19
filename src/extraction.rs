@@ -1,12 +1,9 @@
 use crate::*;
 use bevy::math::vec2;
-use bevy::math::Vec3A;
 use bevy::prelude::*;
-use bevy::render::texture::DEFAULT_IMAGE_HANDLE;
 use bevy::render::Extract;
 use bevy::sprite::ExtractedSprite;
 use bevy::sprite::ExtractedSprites;
-use copyless::VecHelper;
 
 /// The z depth the stat bar sprites are drawn with.
 const DEFAULT_Z_DEPTH: f32 = 990.0;
@@ -19,15 +16,16 @@ pub(crate) fn extract_stat_bars<V: TypePath>(
             &Statbar<V>,
             Option<&StatbarBorder<V>>,
             &GlobalTransform,
-            &ComputedVisibility,
+            &InheritedVisibility,
         )>,
     )>,
     mut extracted_sprites: ResMut<ExtractedSprites>,
+    mut commands: Commands,
 ) {
-    let mut new_translation = Vec3::default();
+    let mut new_translation;
     let (depth, query) = &*extraction;
     for (id, bar, border, global_transform, computed_visibility) in query.iter() {
-        if bar.hide || !computed_visibility.is_visible() {
+        if bar.hide || !computed_visibility.get() {
             continue;
         }
         let (major_axis, minor_axis) = if bar.vertical {
@@ -53,33 +51,39 @@ pub(crate) fn extract_stat_bars<V: TypePath>(
                 size.x + border.left + border.right,
                 size.y + border.bottom + border.top,
             );
-            extracted_sprites.sprites.alloc().init(ExtractedSprite {
-                entity: id,
-                transform: GlobalTransform::from_translation(new_translation),
-                color: border.color,
-                rect: None,
-                custom_size: Some(border_size),
-                image_handle_id: DEFAULT_IMAGE_HANDLE.into(),
-                flip_x: false,
-                flip_y: false,
-                anchor: Default::default(),
-            });
+            extracted_sprites.sprites.insert(
+                commands.spawn_empty().id(),
+                ExtractedSprite {
+                    transform: GlobalTransform::from_translation(new_translation),
+                    color: border.color,
+                    rect: None,
+                    custom_size: Some(border_size),
+                    image_handle_id: AssetId::default(),
+                    flip_x: false,
+                    flip_y: false,
+                    anchor: Default::default(),
+                    original_entity: Some(id),
+                },
+            );
         }
 
         // draw bar back
         if value < 1.0 {
             new_translation.z = z + 1.0;
-            extracted_sprites.sprites.alloc().init(ExtractedSprite {
-                entity: id,
-                transform: GlobalTransform::from_translation(new_translation),
-                color: bar.empty_color,
-                rect: None,
-                custom_size: Some(size),
-                image_handle_id: DEFAULT_IMAGE_HANDLE.into(),
-                flip_x: false,
-                flip_y: false,
-                anchor: Default::default(),
-            });
+            extracted_sprites.sprites.insert(
+                commands.spawn_empty().id(),
+                ExtractedSprite {
+                    transform: GlobalTransform::from_translation(new_translation),
+                    color: bar.empty_color,
+                    rect: None,
+                    custom_size: Some(size),
+                    image_handle_id: AssetId::default(),
+                    flip_x: false,
+                    flip_y: false,
+                    anchor: Default::default(),
+                    original_entity: Some(id),
+                },
+            );
         }
 
         // draw bar
@@ -90,17 +94,20 @@ pub(crate) fn extract_stat_bars<V: TypePath>(
             new_translation +=
                 Vec3::from(direction * 0.5 * length * (value - 1.) * major_axis.extend(0.));
             new_translation.z = z + 2.0;
-            extracted_sprites.sprites.alloc().init(ExtractedSprite {
-                entity: id,
-                transform: GlobalTransform::from_translation(new_translation),
-                color: bar.color,
-                rect: None,
-                custom_size: Some(bar_size),
-                image_handle_id: DEFAULT_IMAGE_HANDLE.into(),
-                flip_x: false,
-                flip_y: false,
-                anchor: Default::default(),
-            });
+            extracted_sprites.sprites.insert(
+                commands.spawn_empty().id(),
+                ExtractedSprite {
+                    transform: GlobalTransform::from_translation(new_translation),
+                    color: bar.color,
+                    rect: None,
+                    custom_size: Some(bar_size),
+                    image_handle_id: AssetId::default(),
+                    flip_x: false,
+                    flip_y: false,
+                    anchor: Default::default(),
+                    original_entity: Some(id),
+                },
+            );
         }
     }
 }

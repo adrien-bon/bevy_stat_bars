@@ -4,10 +4,11 @@ use bevy::window::PresentMode;
 use bevy::window::WindowMode;
 use bevy_stat_bars::*;
 
+#[derive(TypePath)]
 struct StatbarMarker<const N: usize>;
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 }
 
 fn spawn_statbars(mut commands: Commands) {
@@ -18,7 +19,7 @@ fn spawn_statbars(mut commands: Commands) {
     let mut displacement = s;
 
     for _ in 0..100 {
-        let mut entity_commands = commands.spawn_bundle(SpatialBundle::default());
+        let mut entity_commands = commands.spawn(SpatialBundle::default());
         seq_macro::seq!(N in 0 .. 200 {
             entity_commands.insert(Statbar::<StatbarMarker<N>> {
                 color: Color::WHITE,
@@ -40,8 +41,8 @@ fn adjust_stats<const N: usize>(
     time: Res<Time>,
     mut statbar: Query<&mut Statbar<StatbarMarker<N>>>,
 ) {
-    statbar.for_each_mut(|mut bar| {
-        bar.value = time.time_since_startup().as_secs_f32().sin().abs();
+    statbar.iter_mut().for_each(|mut bar| {
+        bar.value = time.elapsed_seconds().sin().abs();
     });
 }
 
@@ -54,15 +55,16 @@ fn main() {
             mode: WindowMode::Fullscreen,
             ..Default::default()
         })
-        .add_plugins(DefaultPlugins)
-        .add_plugin(bevy::diagnostic::LogDiagnosticsPlugin::default())
-        .add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default())
-        .add_startup_system(spawn_camera)
-        .add_startup_system(spawn_statbars);
+        .add_plugins((
+            DefaultPlugins,
+            bevy::diagnostic::LogDiagnosticsPlugin::default(),
+            bevy::diagnostic::FrameTimeDiagnosticsPlugin::default(),
+        ))
+        .add_systems(Startup, (spawn_camera, spawn_statbars));
 
     seq_macro::seq!(N in 0  .. 200 {
         app.add_standalone_statbar::<StatbarMarker<N>>()
-            .add_system(adjust_stats::<N>);
+            .add_systems(Update, adjust_stats::<N>);
     });
 
     app.run();

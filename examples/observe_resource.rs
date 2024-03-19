@@ -35,14 +35,14 @@ fn spawn_statbar(mut commands: Commands) {
 
 fn adjust_value(
     time: Res<Time>,
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
     mut my_resource: ResMut<ObservedResource>,
 ) {
     let delta = time.delta_seconds() * 0.25;
-    if input.pressed(KeyCode::Down) {
+    if input.pressed(KeyCode::ArrowDown) {
         my_resource.0 -= delta;
     }
-    if input.pressed(KeyCode::Up) {
+    if input.pressed(KeyCode::ArrowUp) {
         my_resource.0 += delta;
     }
     my_resource.0 = my_resource.0.clamp(0., 1.0);
@@ -53,8 +53,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .insert_resource(ObservedResource(1.0))
         .add_statbar_resource_observer::<ObservedResource>()
-        .add_startup_system(spawn_camera)
-        .add_startup_system(spawn_statbar)
-        .add_system(adjust_value)
+        .add_systems(Startup, (spawn_camera, spawn_statbar))
+        .add_systems(Update, adjust_value)
         .run();
 }

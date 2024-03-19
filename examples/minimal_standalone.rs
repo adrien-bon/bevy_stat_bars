@@ -7,7 +7,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_standalone_statbar::<()>()
-        .add_startup_system(|mut commands: Commands| {
+        .add_systems(Startup, |mut commands: Commands| {
             commands
                 .spawn(Camera2dBundle::default())
                 .commands()

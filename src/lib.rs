@@ -261,13 +261,15 @@ fn switch_stat_bar_colors<T: TypePath>(
 ) where
     T: 'static,
 {
-    color_switch_query.for_each_mut(|(mut bar, switcher)| {
-        bar.color = if bar.value <= switcher.pivot {
-            switcher.low
-        } else {
-            switcher.high
-        };
-    });
+    color_switch_query
+        .iter_mut()
+        .for_each(|(mut bar, switcher)| {
+            bar.color = if bar.value <= switcher.pivot {
+                switcher.low
+            } else {
+                switcher.high
+            };
+        });
 }
 
 fn lerp_stat_bar_colors<T: TypePath>(
@@ -275,10 +277,13 @@ fn lerp_stat_bar_colors<T: TypePath>(
 ) where
     T: 'static,
 {
-    color_lerp_query.for_each_mut(|(mut bar, lerper)| {
-        bar.color = Vec4::from(lerper.min)
-            .lerp(lerper.max.into(), bar.value)
-            .into();
+    color_lerp_query.iter_mut().for_each(|(mut bar, lerper)| {
+        bar.color = Color::rgba_from_array(
+            lerper
+                .min
+                .rgba_to_vec4()
+                .lerp(lerper.max.rgba_to_vec4(), bar.value),
+        );
     });
 }
 
@@ -294,7 +299,7 @@ fn update_statbar_values<T: TypePath>(
 ) where
     T: Component + StatbarObservable,
 {
-    statbar_query.for_each_mut(|(mut statbar, value)| {
+    statbar_query.iter_mut().for_each(|(mut statbar, value)| {
         statbar.value = value.get_statbar_value();
     });
 }
@@ -308,7 +313,7 @@ fn update_statbar_values_from_parents<T: TypePath>(
 ) where
     T: Component + StatbarObservable,
 {
-    statbar_query.for_each_mut(|(mut statbar, parent)| {
+    statbar_query.iter_mut().for_each(|(mut statbar, parent)| {
         if let Ok(value) = parent_value_query.get(parent.get()) {
             statbar.value = value.get_statbar_value();
         }
@@ -324,11 +329,13 @@ fn update_statbar_values_from_other<T: TypePath>(
 ) where
     T: Component + StatbarObservable,
 {
-    statbar_query.for_each_mut(|(mut statbar, &StatbarObserveEntity(target))| {
-        if let Ok(value) = other_value_query.get(target) {
-            statbar.value = value.get_statbar_value();
-        }
-    });
+    statbar_query
+        .iter_mut()
+        .for_each(|(mut statbar, &StatbarObserveEntity(target))| {
+            if let Ok(value) = other_value_query.get(target) {
+                statbar.value = value.get_statbar_value();
+            }
+        });
 }
 
 fn update_statbar_from_resource<T: TypePath + Resource>(
@@ -338,7 +345,7 @@ fn update_statbar_from_resource<T: TypePath + Resource>(
     T: StatbarObservable + 'static + Send + Sync,
 {
     if resource.is_changed() {
-        statbar_query.for_each_mut(|mut statbar| {
+        statbar_query.iter_mut().for_each(|mut statbar| {
             statbar.value = resource.get_statbar_value();
         });
     }
