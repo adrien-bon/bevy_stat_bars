@@ -110,7 +110,11 @@ fn spawn_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..Default::default()
             },
             StatbarBorder::<Health>::all(Color::from(bevy::color::palettes::css::DARK_GRAY), 2.0),
-            StatbarColorSwitch::<Health>::new(0.33, Color::from(bevy::color::palettes::css::RED), Color::srgb(0., 0.8, 0.)),
+            StatbarColorSwitch::<Health>::new(
+                0.33,
+                Color::from(bevy::color::palettes::css::RED),
+                Color::srgb(0., 0.8, 0.),
+            ),
             Statbar::<Magic> {
                 empty_color: Color::srgb(0.1, 0.0, 0.1),
                 length: 100.0,
@@ -119,7 +123,10 @@ fn spawn_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..Default::default()
             },
             StatbarBorder::<Magic>::all(Color::from(bevy::color::palettes::css::DARK_GRAY), 2.0),
-            StatbarColorLerp::<Magic>::new(Color::srgb(0.5, 0.0, 0.5), Color::from(bevy::color::palettes::css::FUCHSIA)),
+            StatbarColorLerp::<Magic>::new(
+                Color::srgb(0.5, 0.0, 0.5),
+                Color::from(bevy::color::palettes::css::FUCHSIA),
+            ),
         ))
         .id();
 

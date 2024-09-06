@@ -253,13 +253,14 @@ where
     }
 }
 
-fn switch_stat_bar_colors<T: TypePath>(
+#[allow(clippy::type_complexity)]
+fn switch_stat_bar_colors<T>(
     mut color_switch_query: Query<
         (&mut Statbar<T>, &mut StatbarColorSwitch<T>),
         Changed<Statbar<T>>,
     >,
 ) where
-    T: 'static,
+    T: 'static + TypePath,
 {
     color_switch_query
         .iter_mut()
@@ -272,18 +273,19 @@ fn switch_stat_bar_colors<T: TypePath>(
         });
 }
 
-fn lerp_stat_bar_colors<T: TypePath>(
+#[allow(clippy::type_complexity)]
+fn lerp_stat_bar_colors<T>(
     mut color_lerp_query: Query<(&mut Statbar<T>, &mut StatbarColorLerp<T>), Changed<Statbar<T>>>,
 ) where
-    T: 'static,
+    T: 'static + TypePath,
 {
-
     color_lerp_query.iter_mut().for_each(|(mut bar, lerper)| {
         bar.color = lerper.min.mix(&lerper.max, bar.value);
     });
 }
 
-fn update_statbar_values<T: TypePath>(
+#[allow(clippy::type_complexity)]
+fn update_statbar_values<T>(
     mut statbar_query: Query<
         (&mut Statbar<T>, &T),
         (
@@ -293,21 +295,22 @@ fn update_statbar_values<T: TypePath>(
         ),
     >,
 ) where
-    T: Component + StatbarObservable,
+    T: Component + StatbarObservable + TypePath,
 {
     statbar_query.iter_mut().for_each(|(mut statbar, value)| {
         statbar.value = value.get_statbar_value();
     });
 }
 
-fn update_statbar_values_from_parents<T: TypePath>(
+#[allow(clippy::type_complexity)]
+fn update_statbar_values_from_parents<T>(
     mut statbar_query: Query<
         (&mut Statbar<T>, &Parent),
         (With<StatbarObserveParent>, Without<StatbarObserveEntity>),
     >,
     parent_value_query: Query<&T, Changed<T>>,
 ) where
-    T: Component + StatbarObservable,
+    T: Component + StatbarObservable + TypePath,
 {
     statbar_query.iter_mut().for_each(|(mut statbar, parent)| {
         if let Ok(value) = parent_value_query.get(parent.get()) {
@@ -316,14 +319,14 @@ fn update_statbar_values_from_parents<T: TypePath>(
     });
 }
 
-fn update_statbar_values_from_other<T: TypePath>(
+fn update_statbar_values_from_other<T>(
     mut statbar_query: Query<
         (&mut Statbar<T>, &StatbarObserveEntity),
         Without<StatbarObserveParent>,
     >,
     other_value_query: Query<&T, Changed<T>>,
 ) where
-    T: Component + StatbarObservable,
+    T: Component + StatbarObservable + TypePath,
 {
     statbar_query
         .iter_mut()
@@ -334,11 +337,9 @@ fn update_statbar_values_from_other<T: TypePath>(
         });
 }
 
-fn update_statbar_from_resource<T: TypePath + Resource>(
-    resource: Res<T>,
-    mut statbar_query: Query<&mut Statbar<T>>,
-) where
-    T: StatbarObservable + 'static + Send + Sync,
+fn update_statbar_from_resource<T>(resource: Res<T>, mut statbar_query: Query<&mut Statbar<T>>)
+where
+    T: StatbarObservable + 'static + Send + Sync + TypePath + Resource,
 {
     if resource.is_changed() {
         statbar_query.iter_mut().for_each(|mut statbar| {

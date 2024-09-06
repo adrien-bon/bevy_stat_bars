@@ -8,6 +8,7 @@ use bevy::sprite::ExtractedSprites;
 /// The z depth the stat bar sprites are drawn with.
 const DEFAULT_Z_DEPTH: f32 = 990.0;
 
+#[allow(clippy::type_complexity)]
 pub(crate) fn extract_stat_bars<V: TypePath>(
     extraction: Extract<(
         Option<Res<StatbarDepth>>,
@@ -91,8 +92,7 @@ pub(crate) fn extract_stat_bars<V: TypePath>(
             let value = value.clamp(0., 1.);
             let bar_size = value * length * major_axis + thickness * minor_axis;
             let direction = if bar.reverse { -1. } else { 1. };
-            new_translation +=
-                Vec3::from(direction * 0.5 * length * (value - 1.) * major_axis.extend(0.));
+            new_translation += direction * 0.5 * length * (value - 1.) * major_axis.extend(0.);
             new_translation.z = z + 2.0;
             extracted_sprites.sprites.insert(
                 commands.spawn_empty().id(),
