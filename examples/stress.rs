@@ -100,23 +100,23 @@ fn spawn_wizards(mut commands: Commands, asset_server: Res<AssetServer>) {
                     Health::new_full(20.0),
                     Magic::new_full(17.0),
                     Statbar::<Health> {
-                        empty_color: Color::rgb(0., 0.1, 0.),
+                        empty_color: Color::srgb(0., 0.1, 0.),
                         length: l,
                         thickness: w,
                         displacement: (0.75 * s - 3.) * Vec2::Y,
                         ..Default::default()
                     },
-                    StatbarBorder::<Health>::all(Color::DARK_GRAY, 1.0),
-                    StatbarColorSwitch::<Health>::new(0.33, Color::RED, Color::rgb(0., 0.8, 0.)),
+                    StatbarBorder::<Health>::all(Color::from(bevy::color::palettes::css::DARK_GRAY), 1.0),
+                    StatbarColorSwitch::<Health>::new(0.33, Color::from(bevy::color::palettes::css::RED), Color::srgb(0., 0.8, 0.)),
                     Statbar::<Magic> {
-                        empty_color: Color::rgb(0.1, 0.0, 0.1),
+                        empty_color: Color::srgb(0.1, 0.0, 0.1),
                         length: l,
                         thickness: w,
                         displacement: (0.75 * s + 3.) * Vec2::Y,
                         ..Default::default()
                     },
-                    StatbarBorder::<Magic>::all(Color::DARK_GRAY, 1.0),
-                    StatbarColorLerp::<Magic>::new(Color::rgb(0.5, 0.0, 0.5), Color::FUCHSIA),
+                    StatbarBorder::<Magic>::all(Color::from(bevy::color::palettes::css::DARK_GRAY), 1.0),
+                    StatbarColorLerp::<Magic>::new(Color::srgb(0.5, 0.0, 0.5), Color::from(bevy::color::palettes::css::FUCHSIA)),
                 ));
             transform.translation.x += 1.5 * s;
         }
@@ -130,27 +130,30 @@ fn adjust_stats(
     mut hp_query: Query<&mut Health>,
     mut mp_query: Query<&mut Magic>,
 ) {
-    hp_query.for_each_mut(|mut hp| {
+    hp_query.iter_mut().for_each(|mut hp| {
         hp.value = hp.max * time.elapsed().as_secs_f32().sin().abs();
     });
-    mp_query.for_each_mut(|mut mp| {
+    mp_query.iter_mut().for_each(|mut mp| {
         mp.value = mp.max * time.elapsed().as_secs_f32().cos().abs();
     });
 }
 
 fn main() {
     App::new()
-        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
-        // .insert_resource(bevy::render::texture::ImageSettings::default_nearest())
-        // .insert_resource(WindowDescriptor {
-        //     present_mode: PresentMode::Immediate,
-        //     mode: WindowMode::Fullscreen,
-        //     ..Default::default()
-        // })
-        .add_plugins(DefaultPlugins)
+        .insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.1)))
         .add_plugins((
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        present_mode: PresentMode::Immediate,
+                        mode: WindowMode::Fullscreen,
+                        ..default()
+                    }),
+                    ..default()
+                }),
             bevy::diagnostic::LogDiagnosticsPlugin::default(),
-            bevy::diagnostic::FrameTimeDiagnosticsPlugin::default(),
+            bevy::diagnostic::FrameTimeDiagnosticsPlugin,
         ))
         .register_type::<Health>()
         .register_type::<Magic>()

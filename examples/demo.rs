@@ -103,23 +103,23 @@ fn spawn_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
             Health::new_full(20.0),
             Magic::new_full(17.0),
             Statbar::<Health> {
-                empty_color: Color::rgb(0., 0.1, 0.),
+                empty_color: Color::srgb(0., 0.1, 0.),
                 length: 100.0,
                 thickness: 16.0,
                 displacement: 70. * Vec2::Y,
                 ..Default::default()
             },
-            StatbarBorder::<Health>::all(Color::DARK_GRAY, 2.0),
-            StatbarColorSwitch::<Health>::new(0.33, Color::RED, Color::rgb(0., 0.8, 0.)),
+            StatbarBorder::<Health>::all(Color::from(bevy::color::palettes::css::DARK_GRAY), 2.0),
+            StatbarColorSwitch::<Health>::new(0.33, Color::from(bevy::color::palettes::css::RED), Color::srgb(0., 0.8, 0.)),
             Statbar::<Magic> {
-                empty_color: Color::rgb(0.1, 0.0, 0.1),
+                empty_color: Color::srgb(0.1, 0.0, 0.1),
                 length: 100.0,
                 thickness: 16.0,
                 displacement: 90. * Vec2::Y,
                 ..Default::default()
             },
-            StatbarBorder::<Magic>::all(Color::DARK_GRAY, 2.0),
-            StatbarColorLerp::<Magic>::new(Color::rgb(0.5, 0.0, 0.5), Color::FUCHSIA),
+            StatbarBorder::<Magic>::all(Color::from(bevy::color::palettes::css::DARK_GRAY), 2.0),
+            StatbarColorLerp::<Magic>::new(Color::srgb(0.5, 0.0, 0.5), Color::from(bevy::color::palettes::css::FUCHSIA)),
         ))
         .id();
 
@@ -192,12 +192,12 @@ fn spawn_instructions(mut commands: Commands, asset_server: Res<AssetServer>) {
     let title_style = TextStyle {
         font: asset_server.load("FiraMono-Regular.ttf"),
         font_size: 32.0,
-        color: Color::YELLOW,
+        color: Color::from(bevy::color::palettes::css::YELLOW),
     };
     let text_style = TextStyle {
         font: asset_server.load("FiraMono-Regular.ttf"),
         font_size: 24.0,
-        color: Color::ANTIQUE_WHITE,
+        color: Color::from(bevy::color::palettes::css::ANTIQUE_WHITE),
     };
 
     commands.spawn(
@@ -239,7 +239,7 @@ fn spawn_instructions(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 fn main() {
     App::new()
-        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
+        .insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.1)))
         .add_plugins(
             DefaultPlugins
                 .set(ImagePlugin::default_nearest())

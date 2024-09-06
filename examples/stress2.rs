@@ -23,13 +23,13 @@ fn spawn_statbars(mut commands: Commands) {
         seq_macro::seq!(N in 0 .. 200 {
             entity_commands.insert(Statbar::<StatbarMarker<N>> {
                 color: Color::WHITE,
-                empty_color: Color::BLUE,
+                empty_color: Color::from(bevy::color::palettes::css::BLUE),
                 length,
                 thickness,
                 displacement,
                 ..Default::default()
             })
-            .insert(StatbarColorLerp::<StatbarMarker<N>>::new(Color::RED, Color::WHITE)) ;
+            .insert(StatbarColorLerp::<StatbarMarker<N>>::new(Color::from(bevy::color::palettes::css::RED), Color::WHITE)) ;
             displacement.y += thickness + space;
         });
         displacement.y = s.y;
@@ -48,17 +48,20 @@ fn adjust_stats<const N: usize>(
 
 fn main() {
     let mut app = App::new();
-    app.insert_resource(ClearColor(Color::rgb(0.0, 0.5, 0.0)))
-        .insert_resource(bevy::render::texture::ImageSettings::default_nearest())
-        .insert_resource(WindowDescriptor {
-            present_mode: PresentMode::Immediate,
-            mode: WindowMode::Fullscreen,
-            ..Default::default()
-        })
+    app.insert_resource(ClearColor(Color::srgb(0.0, 0.5, 0.0)))
         .add_plugins((
-            DefaultPlugins,
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        present_mode: PresentMode::Immediate,
+                        mode: WindowMode::Fullscreen,
+                        ..default()
+                    }),
+                    ..default()
+                }),
             bevy::diagnostic::LogDiagnosticsPlugin::default(),
-            bevy::diagnostic::FrameTimeDiagnosticsPlugin::default(),
+            bevy::diagnostic::FrameTimeDiagnosticsPlugin,
         ))
         .add_systems(Startup, (spawn_camera, spawn_statbars));
 

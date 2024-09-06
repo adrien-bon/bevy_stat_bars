@@ -55,7 +55,7 @@ pub(crate) fn extract_stat_bars<V: TypePath>(
                 commands.spawn_empty().id(),
                 ExtractedSprite {
                     transform: GlobalTransform::from_translation(new_translation),
-                    color: border.color,
+                    color: border.color.to_linear(),
                     rect: None,
                     custom_size: Some(border_size),
                     image_handle_id: AssetId::default(),
@@ -74,7 +74,7 @@ pub(crate) fn extract_stat_bars<V: TypePath>(
                 commands.spawn_empty().id(),
                 ExtractedSprite {
                     transform: GlobalTransform::from_translation(new_translation),
-                    color: bar.empty_color,
+                    color: bar.empty_color.to_linear(),
                     rect: None,
                     custom_size: Some(size),
                     image_handle_id: AssetId::default(),
@@ -98,7 +98,7 @@ pub(crate) fn extract_stat_bars<V: TypePath>(
                 commands.spawn_empty().id(),
                 ExtractedSprite {
                     transform: GlobalTransform::from_translation(new_translation),
-                    color: bar.color,
+                    color: bar.color.to_linear(),
                     rect: None,
                     custom_size: Some(bar_size),
                     image_handle_id: AssetId::default(),

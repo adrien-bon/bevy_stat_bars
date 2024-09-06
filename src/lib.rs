@@ -97,8 +97,8 @@ where
 impl<T: TypePath> Default for Statbar<T> {
     fn default() -> Self {
         Self {
-            color: Color::YELLOW,
-            empty_color: Color::rgb(0.2, 0.2, 0.0),
+            color: Color::from(bevy::color::palettes::css::YELLOW),
+            empty_color: Color::srgb(0.2, 0.2, 0.0),
             length: 100.,
             thickness: 16.,
             displacement: Vec2::ZERO,
@@ -182,8 +182,8 @@ where
 {
     fn default() -> Self {
         Self {
-            min: Color::RED,
-            max: Color::GREEN,
+            min: Color::from(bevy::color::palettes::css::RED),
+            max: Color::from(bevy::color::palettes::css::GREEN),
             phantom: Default::default(),
         }
     }
@@ -232,8 +232,8 @@ where
     fn default() -> Self {
         Self {
             pivot: 0.25,
-            low: Color::RED,
-            high: Color::GREEN,
+            low: Color::from(bevy::color::palettes::css::RED),
+            high: Color::from(bevy::color::palettes::css::GREEN),
             phantom: Default::default(),
         }
     }
@@ -277,13 +277,9 @@ fn lerp_stat_bar_colors<T: TypePath>(
 ) where
     T: 'static,
 {
+
     color_lerp_query.iter_mut().for_each(|(mut bar, lerper)| {
-        bar.color = Color::rgba_from_array(
-            lerper
-                .min
-                .rgba_to_vec4()
-                .lerp(lerper.max.rgba_to_vec4(), bar.value),
-        );
+        bar.color = lerper.min.mix(&lerper.max, bar.value);
     });
 }
 
@@ -374,7 +370,7 @@ impl RegisterStatbarSubject for App {
     fn add_statbar_component_observer<T: StatbarObservable + Component + TypePath>(
         &mut self,
     ) -> &mut Self {
-        if let Ok(render_app) = self.get_sub_app_mut(bevy::render::RenderApp) {
+        if let Some(render_app) = self.get_sub_app_mut(bevy::render::RenderApp) {
             render_app.add_systems(
                 ExtractSchedule,
                 extraction::extract_stat_bars::<T>
@@ -410,7 +406,7 @@ impl RegisterStatbarSubject for App {
     >(
         &mut self,
     ) -> &mut Self {
-        if let Ok(render_app) = self.get_sub_app_mut(bevy::render::RenderApp) {
+        if let Some(render_app) = self.get_sub_app_mut(bevy::render::RenderApp) {
             render_app.add_systems(
                 ExtractSchedule,
                 extraction::extract_stat_bars::<T>
@@ -437,7 +433,7 @@ impl RegisterStatbarSubject for App {
     }
 
     fn add_standalone_statbar<T: TypePath + 'static>(&mut self) -> &mut Self {
-        if let Ok(render_app) = self.get_sub_app_mut(bevy::render::RenderApp) {
+        if let Some(render_app) = self.get_sub_app_mut(bevy::render::RenderApp) {
             render_app.add_systems(
                 ExtractSchedule,
                 extraction::extract_stat_bars::<T>

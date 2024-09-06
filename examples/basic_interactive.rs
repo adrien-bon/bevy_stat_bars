@@ -23,8 +23,8 @@ fn spawn_statbar(mut commands: Commands) {
     commands
         .spawn((
             Statbar::<ObservedValue> {
-                color: Color::RED,
-                empty_color: Color::NAVY,
+                color: Color::from(bevy::color::palettes::css::RED),
+                empty_color: Color::from(bevy::color::palettes::css::NAVY),
                 length: 400.,
                 thickness: 40.,
                 ..Default::default()

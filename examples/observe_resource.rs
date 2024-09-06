@@ -21,8 +21,8 @@ fn spawn_statbar(mut commands: Commands) {
     commands
         .spawn((
             Statbar::<ObservedResource> {
-                color: Color::RED,
-                empty_color: Color::NAVY,
+                color: Color::from(bevy::color::palettes::css::RED),
+                empty_color: Color::from(bevy::color::palettes::css::NAVY),
                 length: 500.,
                 thickness: 50.,
                 vertical: true,
