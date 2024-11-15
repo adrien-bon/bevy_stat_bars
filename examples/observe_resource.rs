@@ -18,18 +18,17 @@ fn spawn_camera(mut commands: Commands) {
 }
 
 fn spawn_statbar(mut commands: Commands) {
-    commands
-        .spawn((
-            Statbar::<ObservedResource> {
-                color: Color::from(bevy::color::palettes::css::RED),
-                empty_color: Color::from(bevy::color::palettes::css::NAVY),
-                length: 500.,
-                thickness: 50.,
-                vertical: true,
-                ..Default::default()
-            },
-            StatbarBorder::<ObservedResource>::all(Color::WHITE, 10.0),
-        ));
+    commands.spawn((
+        Statbar::<ObservedResource> {
+            color: Color::from(bevy::color::palettes::css::RED),
+            empty_color: Color::from(bevy::color::palettes::css::NAVY),
+            length: 500.,
+            thickness: 50.,
+            vertical: true,
+            ..Default::default()
+        },
+        StatbarBorder::<ObservedResource>::all(Color::WHITE, 10.0),
+    ));
 }
 
 fn adjust_value(

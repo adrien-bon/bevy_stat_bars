@@ -1,4 +1,7 @@
-use bevy::{prelude::*, render::view::{RenderVisibleEntities, VisibleEntities}};
+use bevy::{
+    prelude::*,
+    render::view::{RenderVisibleEntities, VisibleEntities},
+};
 use bevy_stat_bars::*;
 
 // Spawns a red and navy statbar with a white border in the middle of the window.
@@ -20,19 +23,18 @@ fn spawn_camera(mut commands: Commands) {
 }
 
 fn spawn_statbar(mut commands: Commands) {
-    commands
-        .spawn((
-            Statbar::<ObservedValue> {
-                color: Color::from(bevy::color::palettes::css::RED),
-                empty_color: Color::from(bevy::color::palettes::css::NAVY),
-                length: 400.,
-                thickness: 40.,
-                ..Default::default()
-            },
-            StatbarBorder::<ObservedValue>::all(Color::WHITE, 4.0),
-            ObservedValue(0.35),
-            Visibility::Visible,
-        ));
+    commands.spawn((
+        Statbar::<ObservedValue> {
+            color: Color::from(bevy::color::palettes::css::RED),
+            empty_color: Color::from(bevy::color::palettes::css::NAVY),
+            length: 400.,
+            thickness: 40.,
+            ..Default::default()
+        },
+        StatbarBorder::<ObservedValue>::all(Color::WHITE, 4.0),
+        ObservedValue(0.35),
+        Visibility::Visible,
+    ));
 }
 
 fn adjust_value(

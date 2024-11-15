@@ -127,18 +127,17 @@ fn spawn_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
         ))
         .id();
 
-    commands
-        .spawn((
-            Statbar::<Health> {
-                color: Color::WHITE,
-                empty_color: Color::BLACK,
-                length: 500.0,
-                thickness: 50.0,
-                ..Default::default()
-            },
-            StatbarObserveEntity(wizard_id),
-            Transform::from_translation(-200. * Vec3::Y),
-        ));
+    commands.spawn((
+        Statbar::<Health> {
+            color: Color::WHITE,
+            empty_color: Color::BLACK,
+            length: 500.0,
+            thickness: 50.0,
+            ..Default::default()
+        },
+        StatbarObserveEntity(wizard_id),
+        Transform::from_translation(-200. * Vec3::Y),
+    ));
 }
 
 fn move_character(
@@ -190,29 +189,28 @@ fn adjust_stats(
 }
 
 fn spawn_instructions(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let root_id = commands.spawn(
-        (
-        Node {
+    let root_id = commands
+        .spawn((Node {
             display: Display::Flex,
             justify_content: JustifyContent::Center,
             align_self: AlignSelf::FlexStart,
             align_items: AlignItems::Stretch,
             flex_direction: FlexDirection::Column,
             ..Default::default()
-        },
-    )
-    ).id();
-    commands.spawn((
-        Text::new("bevy_stat_bars demo\n\n"),
-        TextFont {
-            font: asset_server.load("FiraMono-Regular.ttf"),
-            font_size: 32.0,
-            ..Default::default()
-        },
-        TextColor(Color::from(bevy::color::palettes::css::YELLOW)),
-        TextLayout::new_with_justify(JustifyText::Center),
-    ))
-    .set_parent(root_id);
+        },))
+        .id();
+    commands
+        .spawn((
+            Text::new("bevy_stat_bars demo\n\n"),
+            TextFont {
+                font: asset_server.load("FiraMono-Regular.ttf"),
+                font_size: 32.0,
+                ..Default::default()
+            },
+            TextColor(Color::from(bevy::color::palettes::css::YELLOW)),
+            TextLayout::new_with_justify(JustifyText::Center),
+        ))
+        .set_parent(root_id);
     commands.spawn((
         Text::new("left, right, down, up keys => move wizard\nQ, W => -/+ magic stat\nA, S => -/+ health stat"),
         TextFont {
@@ -241,7 +239,7 @@ fn main() {
                     ..default()
                 }),
         )
-//        .add_plugins(WorldInspectorPlugin::new())
+        //        .add_plugins(WorldInspectorPlugin::new())
         .register_type::<Health>()
         .register_type::<Magic>()
         .register_type::<WizardCharacter>()

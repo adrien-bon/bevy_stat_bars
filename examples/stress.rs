@@ -71,10 +71,7 @@ type Health = Stat<HealthValue>;
 type Magic = Stat<MagicValue>;
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn((
-        Camera2d,
-        Transform::from_scale(Vec3::new(2.5, 2.5, 0.))
-    ));
+    commands.spawn((Camera2d, Transform::from_scale(Vec3::new(2.5, 2.5, 0.))));
 }
 
 fn spawn_wizards(mut commands: Commands, asset_server: Res<AssetServer>) {

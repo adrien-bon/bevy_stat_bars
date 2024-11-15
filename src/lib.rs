@@ -57,7 +57,7 @@ where
 /// Multiple statbars can be inserted on a single entity by using different marker components.
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
-#[require(Transform,Visibility,SpriteSource)]
+#[require(Transform, Visibility, SpriteSource)]
 pub struct Statbar<T = ()>
 where
     T: TypePath + 'static,
@@ -79,6 +79,7 @@ where
     /// false =>
     /// * horizontal bar increasing from left to right
     /// * vertical bar increasing from bottom to top
+    /// 
     /// true =>
     /// * horizontal bar increasing from right to left
     /// * vertical bar increasing from bottom to top
