@@ -85,17 +85,14 @@ type Health = Stat<HealthValue>;
 type Magic = Stat<MagicValue>;
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 }
 
 fn spawn_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
     let wizard_id = commands
-        .spawn(SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(128. * Vec2::ONE),
-                ..Default::default()
-            },
-            texture: asset_server.load("wizard.png"),
+        .spawn(Sprite {
+            image: asset_server.load("wizard.png"),
+            custom_size: Some(128. * Vec2::ONE),
             ..Default::default()
         })
         .insert((
@@ -140,11 +137,8 @@ fn spawn_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..Default::default()
             },
             StatbarObserveEntity(wizard_id),
-        ))
-        .insert(SpatialBundle {
-            transform: Transform::from_translation(-200. * Vec3::Y),
-            ..Default::default()
-        });
+            Transform::from_translation(-200. * Vec3::Y),
+        ));
 }
 
 fn move_character(
@@ -156,16 +150,16 @@ fn move_character(
     player_query.iter_mut().for_each(|mut player_transform| {
         let translation = &mut player_transform.translation;
         if keyboard_input.pressed(KeyCode::ArrowLeft) {
-            translation.x -= time.delta_seconds() * speed;
+            translation.x -= time.delta_secs() * speed;
         }
         if keyboard_input.pressed(KeyCode::ArrowRight) {
-            translation.x += time.delta_seconds() * speed;
+            translation.x += time.delta_secs() * speed;
         }
         if keyboard_input.pressed(KeyCode::ArrowDown) {
-            translation.y -= time.delta_seconds() * speed;
+            translation.y -= time.delta_secs() * speed;
         }
         if keyboard_input.pressed(KeyCode::ArrowUp) {
-            translation.y += time.delta_seconds() * speed;
+            translation.y += time.delta_secs() * speed;
         }
     });
 }
@@ -176,7 +170,7 @@ fn adjust_stats(
     mut hp_query: Query<&mut Health>,
     mut mp_query: Query<&mut Magic>,
 ) {
-    let delta = 5.0 * time.delta_seconds();
+    let delta = 5.0 * time.delta_secs();
     hp_query.iter_mut().for_each(|mut hp| {
         if keyboard_input.pressed(KeyCode::KeyA) {
             *hp -= delta;
@@ -196,52 +190,40 @@ fn adjust_stats(
 }
 
 fn spawn_instructions(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let title_style = TextStyle {
-        font: asset_server.load("FiraMono-Regular.ttf"),
-        font_size: 32.0,
-        color: Color::from(bevy::color::palettes::css::YELLOW),
-    };
-    let text_style = TextStyle {
-        font: asset_server.load("FiraMono-Regular.ttf"),
-        font_size: 24.0,
-        color: Color::from(bevy::color::palettes::css::ANTIQUE_WHITE),
-    };
-
-    commands.spawn(
-        NodeBundle {
-        style: Style {
-            width: Val::Percent(100.0),
-            height: Val::Percent(100.0),
+    let root_id = commands.spawn(
+        (
+        Node {
+            display: Display::Flex,
             justify_content: JustifyContent::Center,
+            align_self: AlignSelf::FlexStart,
+            align_items: AlignItems::Stretch,
+            flex_direction: FlexDirection::Column,
             ..Default::default()
         },
-        background_color: BackgroundColor(Color::NONE),
-        ..Default::default()
-    }).with_children(|builder| {
-        builder.spawn(
-            TextBundle {
-                text: Text {
-                    sections: vec![
-                        TextSection {
-                            value: "bevy_stat_bars demo\n\n".to_string(), 
-                            style: title_style
-                        },
-                        TextSection {
-                            value:
-                            "left, right, down, up keys => move wizard\nQ, W => -/+ magic stat\nA, S => -/+ health stat".to_string(),
-                            style: text_style
-                        }
-                    ],
-                    justify: JustifyText::Center,
-                    linebreak_behavior: bevy::text::BreakLineOn::WordBoundary,
-                },
-                style: Style {
-                    align_self: AlignSelf::FlexEnd,
-                    ..Default::default()
-                },
-                ..Default::default()
-        });
-    });
+    )
+    ).id();
+    commands.spawn((
+        Text::new("bevy_stat_bars demo\n\n"),
+        TextFont {
+            font: asset_server.load("FiraMono-Regular.ttf"),
+            font_size: 32.0,
+            ..Default::default()
+        },
+        TextColor(Color::from(bevy::color::palettes::css::YELLOW)),
+        TextLayout::new_with_justify(JustifyText::Center),
+    ))
+    .set_parent(root_id);
+    commands.spawn((
+        Text::new("left, right, down, up keys => move wizard\nQ, W => -/+ magic stat\nA, S => -/+ health stat"),
+        TextFont {
+            font: asset_server.load("FiraMono-Regular.ttf"),
+            font_size: 24.0,
+            ..Default::default()
+        },
+        TextColor(Color::from(bevy::color::palettes::css::ANTIQUE_WHITE)),
+        TextLayout::new_with_justify(JustifyText::Center),
+    ))
+    .set_parent(root_id);
 }
 
 fn main() {
@@ -259,7 +241,7 @@ fn main() {
                     ..default()
                 }),
         )
-        .add_plugins(WorldInspectorPlugin::new())
+//        .add_plugins(WorldInspectorPlugin::new())
         .register_type::<Health>()
         .register_type::<Magic>()
         .register_type::<WizardCharacter>()

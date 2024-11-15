@@ -1,6 +1,7 @@
 use crate::*;
 use bevy::math::vec2;
 use bevy::prelude::*;
+use bevy::render::sync_world::TemporaryRenderEntity;
 use bevy::render::Extract;
 use bevy::sprite::ExtractedSprite;
 use bevy::sprite::ExtractedSprites;
@@ -17,7 +18,7 @@ pub(crate) fn extract_stat_bars<V: TypePath>(
             &Statbar<V>,
             Option<&StatbarBorder<V>>,
             &GlobalTransform,
-            &InheritedVisibility,
+            &ViewVisibility,
         )>,
     )>,
     mut extracted_sprites: ResMut<ExtractedSprites>,
@@ -53,7 +54,7 @@ pub(crate) fn extract_stat_bars<V: TypePath>(
                 size.y + border.bottom + border.top,
             );
             extracted_sprites.sprites.insert(
-                commands.spawn_empty().id(),
+                (commands.spawn(TemporaryRenderEntity).id(), id.into()),
                 ExtractedSprite {
                     transform: GlobalTransform::from_translation(new_translation),
                     color: border.color.to_linear(),
@@ -72,7 +73,7 @@ pub(crate) fn extract_stat_bars<V: TypePath>(
         if value < 1.0 {
             new_translation.z = z + 1.0;
             extracted_sprites.sprites.insert(
-                commands.spawn_empty().id(),
+                (commands.spawn(TemporaryRenderEntity).id(), id.into()),
                 ExtractedSprite {
                     transform: GlobalTransform::from_translation(new_translation),
                     color: bar.empty_color.to_linear(),
@@ -95,7 +96,7 @@ pub(crate) fn extract_stat_bars<V: TypePath>(
             new_translation += direction * 0.5 * length * (value - 1.) * major_axis.extend(0.);
             new_translation.z = z + 2.0;
             extracted_sprites.sprites.insert(
-                commands.spawn_empty().id(),
+                (commands.spawn(TemporaryRenderEntity).id(), id.into()),
                 ExtractedSprite {
                     transform: GlobalTransform::from_translation(new_translation),
                     color: bar.color.to_linear(),

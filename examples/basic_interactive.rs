@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::view::{RenderVisibleEntities, VisibleEntities}};
 use bevy_stat_bars::*;
 
 // Spawns a red and navy statbar with a white border in the middle of the window.
@@ -16,7 +16,7 @@ impl StatbarObservable for ObservedValue {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 }
 
 fn spawn_statbar(mut commands: Commands) {
@@ -31,8 +31,8 @@ fn spawn_statbar(mut commands: Commands) {
             },
             StatbarBorder::<ObservedValue>::all(Color::WHITE, 4.0),
             ObservedValue(0.35),
-        ))
-        .insert(SpatialBundle::default());
+            Visibility::Visible,
+        ));
 }
 
 fn adjust_value(
@@ -40,7 +40,7 @@ fn adjust_value(
     input: Res<ButtonInput<KeyCode>>,
     mut observed_values: Query<&mut ObservedValue>,
 ) {
-    let delta = time.delta_seconds() * 0.25;
+    let delta = time.delta_secs() * 0.25;
     observed_values.iter_mut().for_each(|mut value| {
         if input.pressed(KeyCode::ArrowLeft) {
             value.0 -= delta;

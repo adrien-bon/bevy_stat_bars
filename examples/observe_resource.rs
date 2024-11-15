@@ -14,7 +14,7 @@ impl StatbarObservable for ObservedResource {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 }
 
 fn spawn_statbar(mut commands: Commands) {
@@ -29,8 +29,7 @@ fn spawn_statbar(mut commands: Commands) {
                 ..Default::default()
             },
             StatbarBorder::<ObservedResource>::all(Color::WHITE, 10.0),
-        ))
-        .insert(SpatialBundle::default());
+        ));
 }
 
 fn adjust_value(
@@ -38,7 +37,7 @@ fn adjust_value(
     input: Res<ButtonInput<KeyCode>>,
     mut my_resource: ResMut<ObservedResource>,
 ) {
-    let delta = time.delta_seconds() * 0.25;
+    let delta = time.delta_secs() * 0.25;
     if input.pressed(KeyCode::ArrowDown) {
         my_resource.0 -= delta;
     }

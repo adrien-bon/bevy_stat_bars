@@ -8,11 +8,8 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_standalone_statbar::<()>()
         .add_systems(Startup, |mut commands: Commands| {
-            commands
-                .spawn(Camera2dBundle::default())
-                .commands()
-                .spawn(SpatialBundle::default())
-                .insert(Statbar::<()>::default());
+            commands.spawn(Camera2d);
+            commands.spawn(Statbar::<()>::default());
         })
         .run();
 }

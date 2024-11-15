@@ -9,7 +9,7 @@ repository = "https://github.com/ickshonpe/bevy_stat_bars"
 description = "plugin for drawing floating stat bars"
 
 [dependencies.bevy]
-version = "0.14"
+version = "0.15.0-rc.3"
 default-features = false
 features = ["bevy_render", "bevy_color", "bevy_sprite"]
 
@@ -17,7 +17,7 @@ features = ["bevy_render", "bevy_color", "bevy_sprite"]
 version = "0.1"
 
 [dev-dependencies.bevy]
-version = "0.14"
+version = "0.15.0-rc.3"
 default-features = true
 
 [dev-dependencies.bevy-inspector-egui]

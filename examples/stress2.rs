@@ -19,7 +19,7 @@ fn spawn_statbars(mut commands: Commands) {
     let mut displacement = s;
 
     for _ in 0..100 {
-        let mut entity_commands = commands.spawn(SpatialBundle::default());
+        let mut entity_commands = commands.spawn((Visibility::default(), Transform::default()));
         seq_macro::seq!(N in 0 .. 200 {
             entity_commands.insert(Statbar::<StatbarMarker<N>> {
                 color: Color::WHITE,
@@ -42,7 +42,7 @@ fn adjust_stats<const N: usize>(
     mut statbar: Query<&mut Statbar<StatbarMarker<N>>>,
 ) {
     statbar.iter_mut().for_each(|mut bar| {
-        bar.value = time.elapsed_seconds().sin().abs();
+        bar.value = time.elapsed_secs().sin().abs();
     });
 }
 
@@ -55,7 +55,7 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         present_mode: PresentMode::Immediate,
-                        mode: WindowMode::Fullscreen,
+                        mode: WindowMode::Fullscreen(MonitorSelection::Current),
                         ..default()
                     }),
                     ..default()

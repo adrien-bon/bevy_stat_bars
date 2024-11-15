@@ -71,10 +71,10 @@ type Health = Stat<HealthValue>;
 type Magic = Stat<MagicValue>;
 
 fn spawn_camera(mut commands: Commands) {
-    let mut c = Camera2dBundle::default();
-    c.transform.scale.x = 2.5;
-    c.transform.scale.y = 2.5;
-    commands.spawn(c);
+    commands.spawn((
+        Camera2d,
+        Transform::from_scale(Vec3::new(2.5, 2.5, 0.))
+    ));
 }
 
 fn spawn_wizards(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -86,13 +86,9 @@ fn spawn_wizards(mut commands: Commands, asset_server: Res<AssetServer>) {
     for _ in 0..GRID_SIZE {
         for _ in 0..GRID_SIZE {
             commands
-                .spawn(SpriteBundle {
-                    sprite: Sprite {
-                        custom_size: Some(s * Vec2::ONE),
-                        ..Default::default()
-                    },
-                    texture: asset_server.load("wizard.png"),
-                    transform,
+                .spawn(Sprite {
+                    image: asset_server.load("wizard.png"),
+                    custom_size: Some(128. * Vec2::ONE),
                     ..Default::default()
                 })
                 .insert((
@@ -160,7 +156,7 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         present_mode: PresentMode::Immediate,
-                        mode: WindowMode::Fullscreen,
+                        mode: WindowMode::Fullscreen(MonitorSelection::Current),
                         ..default()
                     }),
                     ..default()

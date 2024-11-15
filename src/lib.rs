@@ -1,6 +1,6 @@
 mod extraction;
 
-use bevy::{prelude::*, reflect::TypePath};
+use bevy::{prelude::*, reflect::TypePath, sprite::SpriteSource};
 use std::marker::PhantomData;
 
 /// Insert as a resource to set z depth of Statbars
@@ -55,8 +55,9 @@ where
 
 /// Insert this component to add a statbar to an entity.
 /// Multiple statbars can be inserted on a single entity by using different marker components.
-#[derive(Component, Reflect)]
+#[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
+#[require(Transform,Visibility,SpriteSource)]
 pub struct Statbar<T = ()>
 where
     T: TypePath + 'static,
