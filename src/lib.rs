@@ -79,7 +79,7 @@ where
     /// false =>
     /// * horizontal bar increasing from left to right
     /// * vertical bar increasing from bottom to top
-    /// 
+    ///
     /// true =>
     /// * horizontal bar increasing from right to left
     /// * vertical bar increasing from bottom to top

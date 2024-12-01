@@ -239,7 +239,7 @@ fn main() {
                     ..default()
                 }),
         )
-        //        .add_plugins(WorldInspectorPlugin::new())
+        .add_plugins(WorldInspectorPlugin::new())
         .register_type::<Health>()
         .register_type::<Magic>()
         .register_type::<WizardCharacter>()
